@@ -1,0 +1,11 @@
+employee:
+  name: employee
+  description: Funcionário
+
+manager:
+  name: manager
+  description: Gestor
+
+admin:
+  name: admin
+  description: Administrador

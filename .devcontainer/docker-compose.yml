@@ -1,0 +1,5 @@
+services:
+  # Overrides para uso com o VS Code Dev Containers.
+  backend:
+    # Mantém o container vivo mesmo sem o servidor Rails rodando.
+    command: sleep infinity

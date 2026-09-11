@@ -1,0 +1,99 @@
+name: meu-projeto-ruby
+
+# Cadeia: frontend (Nuxt) -> backend (Rails API) -> db (PostgreSQL)
+#
+#   docker compose up
+#
+#   Frontend:  http://localhost:${FRONTEND_PORT:-3000}
+#   Backend:   http://localhost:${BACKEND_PORT:-3001}
+#   Postgres:  localhost:${DATABASE_PORT:-5434}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      POSTGRES_DB: ${DATABASE_NAME:-meu_projeto_ruby_development}
+    ports:
+      - "${DATABASE_PORT:-5434}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - appnet
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend/Dockerfile
+    # Roda com o mesmo UID/GID do host para não gerar arquivos como root.
+    user: "${UID:-1000}:${GID:-1000}"
+    command: >
+      bash -c "rm -f tmp/pids/server.pid &&
+               bin/rails db:prepare &&
+               bin/rails server -b 0.0.0.0 -p 3000"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "${BACKEND_PORT:-3001}:3000"
+    environment:
+      RAILS_ENV: development
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${DATABASE_USER:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      DATABASE_NAME: ${DATABASE_NAME:-meu_projeto_ruby_development}
+      DATABASE_NAME_TEST: ${DATABASE_NAME_TEST:-meu_projeto_ruby_test}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # "pronto" só depois que o Puma responde na porta 3000.
+      test: ["CMD-SHELL", "curl -fs http://localhost:3000/api/v1/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 90s
+    networks:
+      - appnet
+    stdin_open: true
+    tty: true
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile
+    command: npm run dev
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_nuxt:/app/.nuxt
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      # Alvo do proxy /api do servidor Nuxt (rede interna do Docker).
+      # O navegador só fala com o próprio Nuxt (porta 3000) — sem CORS.
+      NUXT_API_INTERNAL: ${NUXT_API_INTERNAL:-http://backend:3000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - appnet
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:
+  frontend_node_modules:
+  frontend_nuxt:
+
+networks:
+  appnet:
+    driver: bridge

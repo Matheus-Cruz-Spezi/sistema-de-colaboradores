@@ -1,0 +1,15 @@
+<% permissions = {
+     "admin" => %w[dashboard_view employees_read employees_create employees_update
+                   employees_destroy employees_history departments_read departments_manage
+                   notifications_read roles_read users_manage],
+     "manager" => %w[dashboard_view employees_read employees_history departments_read
+                     departments_manage notifications_read roles_read],
+     "employee" => %w[employees_read departments_read notifications_read]
+   } %>
+<% permissions.each do |role, perms| %>
+<% perms.each do |permission| %>
+<%= role %>_<%= permission %>:
+  role: <%= role %>
+  permission: <%= permission %>
+<% end %>
+<% end %>

@@ -1,0 +1,24 @@
+# PostgreSQL. Configuração via variáveis de ambiente (ver docker-compose.yml / .env).
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: <%= ENV.fetch("DATABASE_HOST", "db") %>
+  port: <%= ENV.fetch("DATABASE_PORT", 5432) %>
+  username: <%= ENV.fetch("DATABASE_USER", "postgres") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", "postgres") %>
+  # https://guides.rubyonrails.org/configuring.html#database-pooling
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: <%= ENV.fetch("DATABASE_NAME", "meu_projeto_ruby_development") %>
+
+# O banco "test" é apagado e recriado a cada execução da suíte. Nunca aponte
+# para o mesmo banco de development ou production.
+test:
+  <<: *default
+  database: <%= ENV.fetch("DATABASE_NAME_TEST", "meu_projeto_ruby_test") %>
+
+production:
+  <<: *default
+  database: <%= ENV.fetch("DATABASE_NAME", "meu_projeto_ruby_production") %>

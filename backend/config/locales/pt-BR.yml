@@ -1,0 +1,44 @@
+# Nomes de modelos e atributos em português para as mensagens de validação.
+pt-BR:
+  activerecord:
+    models:
+      user: Usuário
+      role: Papel
+      permission: Permissão
+      department: Departamento
+      employee: Funcionário
+      notification: Notificação
+    attributes:
+      user:
+        email: E-mail
+        password: Senha
+        password_confirmation: Confirmação de senha
+        role: Papel
+      role:
+        name: Nome
+        description: Descrição
+        users: usuários
+      permission:
+        name: Nome
+        description: Descrição
+      department:
+        name: Nome
+        description: Descrição
+        employees: funcionários
+      employee:
+        full_name: Nome completo
+        email: E-mail
+        document_number: CPF
+        job_title: Cargo
+        phone: Telefone
+        employment_status: Situação
+        hired_on: Data de admissão
+        terminated_on: Data de desligamento
+        birth_date: Data de nascimento
+        salary: Salário
+        department: Departamento
+      notification:
+        title: Título
+        body: Mensagem
+        category: Categoria
+        read_at: Lida em

@@ -1,0 +1,19 @@
+ana:
+  full_name: Ana Souza
+  email: ana.souza@empresa.com
+  document_number: "11111111111"
+  job_title: Desenvolvedora Backend
+  department: tecnologia
+  employment_status: active
+  hired_on: 2022-03-01
+  salary: 9500.00
+
+bruno:
+  full_name: Bruno Lima
+  email: bruno.lima@empresa.com
+  document_number: "22222222222"
+  job_title: Analista de RH
+  department: recursos_humanos
+  employment_status: on_leave
+  hired_on: 2021-08-15
+  salary: 7200.00
