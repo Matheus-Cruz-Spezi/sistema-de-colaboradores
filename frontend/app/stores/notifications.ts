@@ -51,5 +51,14 @@ export const useNotificationsStore = defineStore("notifications", {
       this.recent = []
       this.unreadCount = 0
     },
+
+    // Injeta uma notificação que o backend já criou e devolveu na resposta
+    // de outra chamada (ex.: a de boas-vindas do login), sem precisar refazer fetch.
+    addLocal(notification: Notification) {
+      if (this.recent.some((n) => n.id === notification.id)) return
+
+      this.recent = [notification, ...this.recent].slice(0, RECENT_LIMIT)
+      if (!notification.read) this.unreadCount += 1
+    },
   },
 })

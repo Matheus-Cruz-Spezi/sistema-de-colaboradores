@@ -49,6 +49,8 @@ function logout() {
     <main class="container">
       <slot />
     </main>
+
+    <ToastStack />
   </div>
 </template>
 
