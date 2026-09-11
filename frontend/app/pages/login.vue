@@ -39,7 +39,7 @@ async function submit() {
     <div class="head">
       <span class="brand-mark">RH</span>
       <h1>Acessar o sistema</h1>
-      <p class="muted">Gestão de funcionários — Meu Projeto Ruby</p>
+      <p class="muted">Gestão de funcionários — Sistema Colaborador</p>
     </div>
 
     <form @submit.prevent="submit">

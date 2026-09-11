@@ -20,7 +20,7 @@ function logout() {
       <div class="topbar-inner">
         <div class="brand">
           <span class="brand-mark">RH</span>
-          <span class="brand-name">Meu Projeto Ruby</span>
+          <span class="brand-name">Sistema Colaborador</span>
         </div>
 
         <nav class="nav">
