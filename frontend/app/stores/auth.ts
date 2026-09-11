@@ -1,4 +1,5 @@
 import { defineStore } from "pinia"
+import type { Notification } from "./notifications"
 
 interface User {
   id: number
@@ -62,13 +63,25 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async login(email: string, password: string) {
-      const data = await $fetch<{ user: User; token: string }>("/api/v1/login", {
+      const data = await $fetch<{ user: User; token: string; notification?: Notification }>("/api/v1/login", {
         method: "POST",
         body: { email, password },
       })
       this.token = data.token
       this.user = data.user
       this.persist()
+
+      // O backend cria uma notificação de boas-vindas a cada login — mostra
+      // na hora como toast e já deixa marcada como não lida no sininho, pra
+      // confirmar visualmente que o sistema de notificações está no ar.
+      if (data.notification) {
+        useNotificationsStore().addLocal(data.notification)
+        useToastsStore().push({
+          title: data.notification.title,
+          body: data.notification.body,
+          category: data.notification.category,
+        })
+      }
     },
 
     logout() {
