@@ -183,6 +183,24 @@ module Api
       assert_includes events, "update"
     end
 
+    test "history mostra de quem é o perfil e o que mudou em cada edição" do
+      employee = create_employee(job_title: "Analista", employment_status: "active")
+      employee.update!(job_title: "Sênior", employment_status: "on_leave")
+
+      get "/api/v1/employees/#{employee.id}/history", headers: auth_headers_for(@admin)
+      version = response.parsed_body["data"].find { |v| v["event"] == "update" }
+
+      assert_equal employee.full_name, version.dig("employee", "full_name")
+
+      changed_fields = version["changes"].map { |c| c["field"] }
+      assert_includes changed_fields, "job_title"
+      assert_includes changed_fields, "employment_status"
+
+      status_change = version["changes"].find { |c| c["field"] == "employment_status" }
+      assert_equal "Ativo", status_change["before"]
+      assert_equal "Afastado", status_change["after"]
+    end
+
     private
 
     def create_employee(**overrides)

@@ -38,6 +38,19 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
     assert response.parsed_body["token"].present?
   end
 
+  test "login cria e devolve uma notificação de boas-vindas não lida" do
+    user = User.create!(email: "erin@example.com", password: "supersecret")
+
+    assert_difference -> { user.notifications.count }, 1 do
+      post "/api/v1/login", params: { email: "erin@example.com", password: "supersecret" }
+    end
+
+    assert_response :success
+    notification = response.parsed_body["notification"]
+    assert_match(/Bem-vindo/, notification["title"])
+    assert_equal false, notification["read"]
+  end
+
   test "login com senha errada é 401" do
     User.create!(email: "bob@example.com", password: "supersecret")
 

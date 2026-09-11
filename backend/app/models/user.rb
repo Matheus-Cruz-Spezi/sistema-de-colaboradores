@@ -16,6 +16,12 @@ class User < ApplicationRecord
 
   delegate :name, to: :role, prefix: true, allow_nil: true
 
+  # Nome amigável para saudações/notificações — cai para o e-mail quando não
+  # há ficha de funcionário vinculada.
+  def display_name
+    employee&.full_name || email
+  end
+
   # Perfis (Etapa 4)
   def admin? = role_name == Role::ADMIN
   def manager? = role_name == Role::MANAGER

@@ -4,9 +4,19 @@ interface Dashboard {
   by_department: { department: string; employees: number }[]
   payroll: { monthly_total: number; average_salary: number | null }
   recent_hires: { id: number; full_name: string; job_title: string; hired_on: string; department?: { name: string } }[]
-  recent_changes: { id: number; item_type: string; event: string; created_at: string; changed_by: string | null }[]
+  recent_changes: {
+    id: number
+    item_type: string
+    event: string
+    created_at: string
+    changed_by: string | null
+    employee: { id: number; full_name: string } | null
+    changes: { field: string; label: string; before: string; after: string }[]
+  }[]
   notifications: { unread: number }
 }
+
+const CHANGES_PREVIEW = 3
 
 const api = useApi()
 const { data, pending, error, refresh } = useAsyncData(
@@ -19,9 +29,15 @@ const d = computed(() => data.value?.data)
 const maxDept = computed(() => Math.max(1, ...(d.value?.by_department.map((x) => x.employees) ?? [1])))
 
 const eventLabel: Record<string, string> = { create: "criou", update: "editou", destroy: "removeu" }
-const modelLabel: Record<string, string> = { Employee: "um funcionário", Department: "um departamento" }
+const modelLabel: Record<string, string> = { Employee: "o perfil de", Department: "um departamento" }
 
-function describeChange(v: { event: string; item_type: string }): string {
+// "editou o perfil de Ana Souza" quando dá pra identificar de quem é o
+// registro; cai para uma descrição genérica quando não dá (ex.: já removido).
+function describeChange(v: { event: string; item_type: string; employee: { full_name: string } | null }): string {
+  if (v.item_type === "Employee") {
+    const who = v.employee?.full_name ?? "um funcionário"
+    return `${eventLabel[v.event] ?? v.event} o perfil de ${who}`
+  }
   return `${eventLabel[v.event] ?? v.event} ${modelLabel[v.item_type] ?? `um registro de ${v.item_type}`}`
 }
 </script>
@@ -102,6 +118,19 @@ function describeChange(v: { event: string; item_type: string }): string {
                 <strong>{{ v.changed_by ?? "Sistema" }}</strong>
                 <span class="muted">{{ describeChange(v) }}</span>
               </div>
+
+              <ul v-if="v.changes.length" class="diff-list">
+                <li v-for="c in v.changes.slice(0, CHANGES_PREVIEW)" :key="c.field">
+                  <span class="diff-label">{{ c.label }}:</span>
+                  <span class="diff-before">{{ c.before }}</span>
+                  <span class="diff-arrow">→</span>
+                  <span class="diff-after">{{ c.after }}</span>
+                </li>
+                <li v-if="v.changes.length > CHANGES_PREVIEW" class="muted diff-more">
+                  +{{ v.changes.length - CHANGES_PREVIEW }} campo(s) a mais
+                </li>
+              </ul>
+
               <span class="muted">{{ formatDateTime(v.created_at) }}</span>
             </li>
           </ul>
@@ -123,4 +152,11 @@ h1 { font-size: 1.4rem; }
 .list li { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; font-size: .9rem; }
 .list li:last-child { border-bottom: 0; }
 .change-line { display: flex; gap: 5px; flex-wrap: wrap; }
+.diff-list { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.diff-list li { padding: 0; border: 0; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 5px; font-size: .82rem; }
+.diff-label { color: var(--text-muted); font-weight: 600; }
+.diff-before { color: var(--danger); text-decoration: line-through; opacity: .8; }
+.diff-arrow { color: var(--text-muted); }
+.diff-after { color: var(--success); font-weight: 600; }
+.diff-more { font-style: italic; }
 </style>
