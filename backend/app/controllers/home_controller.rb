@@ -1,7 +1,7 @@
 class HomeController < ApplicationController
   def index
     render json: {
-      app: "Meu Projeto Ruby - API",
+      app: "Sistema Colaborador - API",
       status: "ok",
       rails: Rails.version,
       ruby: RUBY_VERSION,
